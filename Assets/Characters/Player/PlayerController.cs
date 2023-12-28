@@ -37,7 +37,8 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        
+        levelEndUI.SetActive(false);
+        replayButtonUI.SetActive(false);
     }
 
     // Update is called once per frame
@@ -96,6 +97,7 @@ public class PlayerController : MonoBehaviour
             Jump();
             playerScore += 100;
             Debug.Log("Landed on " + collision.gameObject.name + ", which is a killable enemy. 100 score added.");
+            Debug.Log("Name: " + collision.gameObject.name);
             Destroy(collision.gameObject);
         }
         else
@@ -111,7 +113,7 @@ public class PlayerController : MonoBehaviour
         {
             Debug.Log("Touched Level End");
             CountScore();
-            Death("Win");
+            Win();
         }
         if (collision.gameObject.CompareTag("Coin"))
         {
@@ -147,8 +149,15 @@ public class PlayerController : MonoBehaviour
         playerScore += (int)timeRemaining * 10;
         Debug.Log(playerScore);
     }
+    void ShowEndScreen()
+    {
+        levelEndUI.SetActive(true);
+        replayButtonUI.SetActive(true);
+    }
+    
     void Death(string reason)
     {
+        ShowEndScreen();
         playerSpeed = 0;
         playerJumpPower = 0;
         ridgidBody.freezeRotation = false;
@@ -157,11 +166,7 @@ public class PlayerController : MonoBehaviour
         ridgidBody.AddForce(Vector2.up * 50);
         ridgidBody.AddTorque(180f);
         string fullString = "";
-        if (reason == "Win")
-        {
-            fullString += "Level Complete!";
-        }
-        else if (reason == "Fell")
+        if (reason == "Fell")
         {
             fullString += "You Fell";
         }
@@ -177,6 +182,16 @@ public class PlayerController : MonoBehaviour
         {
             fullString += "You Failed, Somehow...";
         }
+        fullString += "\n Final Score: " + playerScore;
+        levelEndUI.GetComponent<TMP_Text>().text = fullString;
+    }
+    void Win()
+    {
+        ShowEndScreen();
+        playerSpeed = 0;
+        playerJumpPower = 0;
+        string fullString = "";
+        fullString += "Level Complete!";
         fullString += "\n Final Score: " + playerScore;
         levelEndUI.GetComponent<TMP_Text>().text = fullString;
     }
