@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -19,8 +20,21 @@ public class PlayerController : MonoBehaviour
     public int playerScore = 0;
     public GameObject timeRemainingUI;
     public GameObject playerScoreUI;
+    public GameObject levelEndUI;
+    public GameObject replayButtonUI;
 
-    // Start is called before the first frame update
+    Rigidbody2D ridgidBody;
+    Collider2D bodyCollider;
+    Collider2D feetCollider;
+
+    private void Awake()
+    {
+        var colliders = gameObject.GetComponents<Collider2D>(); ;
+        ridgidBody = gameObject.GetComponent<Rigidbody2D>();
+        bodyCollider = colliders[0];
+        feetCollider = colliders[1];
+    }
+
     void Start()
     {
         
@@ -34,7 +48,8 @@ public class PlayerController : MonoBehaviour
         timeRemainingUI.GetComponent<TMP_Text>().text = ("Time \n" + (int)timeRemaining);
         if (timeRemaining <= 0)
         {
-            TimeDeath();
+            Debug.Log("Out of time");
+            Death("Fell");
         }
         playerScoreUI.GetComponent<TMP_Text>().text = ("Score \n" + playerScore);
     }
@@ -61,7 +76,7 @@ public class PlayerController : MonoBehaviour
             FlipPlayer();
         }
         //PHYSICS
-        gameObject.GetComponent<Rigidbody2D>().velocity = new Vector2(moveX * playerSpeed, gameObject.GetComponent<Rigidbody2D>().velocity.y);
+        ridgidBody.velocity = new Vector2(moveX * playerSpeed, ridgidBody.velocity.y);
     }
     void Jump()
     {
@@ -88,7 +103,22 @@ public class PlayerController : MonoBehaviour
             Debug.Log("YOU STARTED TOUCHING GROUND");
             isGrounded = true;
         }
-        
+        if (collision.gameObject.CompareTag("DeathZone"))
+        {
+            Death("Fell");
+        }
+        if (collision.gameObject.CompareTag("LevelEnd"))
+        {
+            Debug.Log("Touched Level End");
+            CountScore();
+            Death("Win");
+        }
+        if (collision.gameObject.CompareTag("Coin"))
+        {
+            playerScore += 100;
+            Debug.Log("Touched Coin, 100 score added");
+            Destroy(collision.gameObject);
+        }
     }
 
     void OnTriggerStay2D(Collider2D collision)
@@ -102,41 +132,52 @@ public class PlayerController : MonoBehaviour
         isGrounded = false;
         
     }
-    private void OnCollisionEnter2D(Collision2D collision)
+
+    void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("LevelEnd"))
+        Debug.Log(collision.gameObject.tag);
+        if (collision.gameObject.CompareTag("KillableEnemy"))
         {
-            Debug.Log("Touched Level End");
-            CountScore();
-        }
-        if (collision.gameObject.CompareTag("Coin"))
-        {
-            playerScore += 100;
-            Debug.Log("Touched Coin, 100 score added");
-            Destroy(collision.gameObject);
-        }
-        if (collision.gameObject.CompareTag("DeathZone"))
-        {
-            FallDeath();
+            Death("Enemy");
         }
     }
-    private void OnDestroy()
-    {
-        SceneManager.LoadScene("SampleScene");
-    }
-    void FallDeath()
-    {
-        Debug.Log("Player fell out of the world");
-        SceneManager.LoadScene("SampleScene");
-    }
-    void TimeDeath()
-    {
-        Debug.Log("Player ran out of time");
-        SceneManager.LoadScene("SampleScene");
-    }
+    
     void CountScore()
     {
         playerScore += (int)timeRemaining * 10;
         Debug.Log(playerScore);
+    }
+    void Death(string reason)
+    {
+        playerSpeed = 0;
+        playerJumpPower = 0;
+        ridgidBody.freezeRotation = false;
+        bodyCollider.enabled = false;
+        feetCollider.enabled = false;
+        ridgidBody.AddForce(Vector2.up * 50);
+        ridgidBody.AddTorque(180f);
+        string fullString = "";
+        if (reason == "Win")
+        {
+            fullString += "Level Complete!";
+        }
+        else if (reason == "Fell")
+        {
+            fullString += "You Fell";
+        }
+        else if (reason == "Enemy")
+        {
+            fullString += "An Enemy Hit You";
+        }
+        else if (reason == "")
+        {
+            fullString += "?";
+        }
+        else
+        {
+            fullString += "You Failed, Somehow...";
+        }
+        fullString += "\n Final Score: " + playerScore;
+        levelEndUI.GetComponent<TMP_Text>().text = fullString;
     }
 }

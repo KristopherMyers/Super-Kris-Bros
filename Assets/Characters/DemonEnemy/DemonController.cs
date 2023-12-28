@@ -22,7 +22,7 @@ public class PatrolMovement : MonoBehaviour
         RaycastHit2D hit = Physics2D.Raycast(new Vector3(transform.position.x, transform.position.y, transform.position.z), new Vector2(xMoveDirection, 0));
         gameObject.GetComponent<Rigidbody2D>().velocity = new Vector2(xMoveDirection, 0) * enemySpeed;
         Color rayColor;
-        if (hit.collider != null && hit.distance < 0.1f && !hit.collider.gameObject.CompareTag("Player"))
+        if (hit.collider != null && hit.distance < 0.1f && !hit.collider.gameObject.CompareTag("Player") && !hit.collider.gameObject.CompareTag("Coin"))
         {
             rayColor = Color.green;
             Flip();
@@ -36,11 +36,7 @@ public class PatrolMovement : MonoBehaviour
     }
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            Debug.Log("Killed Player");
-            Destroy(collision.gameObject);
-        }
+
     }
         void Flip()
     {
