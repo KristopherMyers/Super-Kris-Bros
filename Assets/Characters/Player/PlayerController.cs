@@ -21,7 +21,7 @@ public class PlayerController : MonoBehaviour
     public GameObject timeRemainingUI;
     public GameObject playerScoreUI;
     public GameObject levelEndUI;
-    public GameObject replayButtonUI;
+    public GameObject replayButtonUI; 
 
     Rigidbody2D ridgidBody;
     Collider2D bodyCollider;
@@ -29,7 +29,7 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
-        var colliders = gameObject.GetComponents<Collider2D>(); ;
+        var colliders = gameObject.GetComponents<Collider2D>();
         ridgidBody = gameObject.GetComponent<Rigidbody2D>();
         bodyCollider = colliders[0];
         feetCollider = colliders[1];
@@ -81,7 +81,7 @@ public class PlayerController : MonoBehaviour
     }
     void Jump()
     {
-        gameObject.GetComponent<Rigidbody2D>().AddForce(Vector2.up * playerJumpPower);
+        ridgidBody.AddForce(Vector2.up * playerJumpPower);
     }
     void FlipPlayer()
     {
@@ -92,19 +92,9 @@ public class PlayerController : MonoBehaviour
     }
     void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("KillableEnemy"))
-        {
-            Jump();
-            playerScore += 100;
-            Debug.Log("Landed on " + collision.gameObject.name + ", which is a killable enemy. 100 score added.");
-            Debug.Log("Name: " + collision.gameObject.name);
-            Destroy(collision.gameObject);
-        }
-        else
-        {
-            Debug.Log("YOU STARTED TOUCHING GROUND");
-            isGrounded = true;
-        }
+        
+        Debug.Log("YOU STARTED TOUCHING GROUND");
+        isGrounded = true;
         if (collision.gameObject.CompareTag("DeathZone"))
         {
             Death("Fell");
@@ -137,11 +127,7 @@ public class PlayerController : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        Debug.Log(collision.gameObject.tag);
-        if (collision.gameObject.CompareTag("KillableEnemy"))
-        {
-            Death("Enemy");
-        }
+
     }
     
     void CountScore()
@@ -155,7 +141,7 @@ public class PlayerController : MonoBehaviour
         replayButtonUI.SetActive(true);
     }
     
-    void Death(string reason)
+    public void Death(string reason)
     {
         ShowEndScreen();
         playerSpeed = 0;
@@ -163,24 +149,17 @@ public class PlayerController : MonoBehaviour
         ridgidBody.freezeRotation = false;
         bodyCollider.enabled = false;
         feetCollider.enabled = false;
-        ridgidBody.AddForce(Vector2.up * 50);
-        ridgidBody.AddTorque(180f);
+        gameObject.GetComponentInChildren<PlayerHead>().StopColliding();
+        ridgidBody.AddForce(Vector2.up * 200);
+        ridgidBody.AddTorque(999f);
         string fullString = "";
         if (reason == "Fell")
         {
             fullString += "You Fell";
         }
-        else if (reason == "Enemy")
+        else 
         {
-            fullString += "An Enemy Hit You";
-        }
-        else if (reason == "")
-        {
-            fullString += "?";
-        }
-        else
-        {
-            fullString += "You Failed, Somehow...";
+            fullString += "You died to a " + reason + " ";
         }
         fullString += "\n Final Score: " + playerScore;
         levelEndUI.GetComponent<TMP_Text>().text = fullString;
@@ -194,5 +173,9 @@ public class PlayerController : MonoBehaviour
         fullString += "Level Complete!";
         fullString += "\n Final Score: " + playerScore;
         levelEndUI.GetComponent<TMP_Text>().text = fullString;
+    }
+    public void HeadBump()
+    {
+        ridgidBody.velocity = new Vector2(ridgidBody.velocity.x, -0.1f);
     }
 }

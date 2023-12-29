@@ -9,6 +9,8 @@ TagManager:
   - Coin
   - KillableEnemy
   - Ground
+  - QuestionBlock
+  - BreakableBrick
   layers:
   - Default
   - TransparentFX
