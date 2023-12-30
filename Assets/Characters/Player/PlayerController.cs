@@ -15,8 +15,9 @@ public class PlayerController : MonoBehaviour
 
     public int playerJumpPower = 200;
     public bool isGrounded;
+    public bool isDead = false;
 
-    public float timeRemaining = 300;
+    public float timeRemaining = 400;
     public int playerScore = 0;
     public GameObject timeRemainingUI;
     public GameObject playerScoreUI;
@@ -45,12 +46,15 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         PlayerMove();
-        timeRemaining -= Time.deltaTime;
-        timeRemainingUI.GetComponent<TMP_Text>().text = ("Time \n" + (int)timeRemaining);
+        if (!isDead)
+        {
+            timeRemaining -= Time.deltaTime;
+            timeRemainingUI.GetComponent<TMP_Text>().text = ("Time \n" + (int)timeRemaining);
+        }
+        
         if (timeRemaining <= 0)
         {
-            Debug.Log("Out of time");
-            Death("Fell");
+            Death("Time");
         }
         playerScoreUI.GetComponent<TMP_Text>().text = ("Score \n" + playerScore);
     }
@@ -64,7 +68,7 @@ public class PlayerController : MonoBehaviour
         }
         else if (Input.GetButtonDown("Jump") && !isGrounded)
         {
-            Debug.Log("Jumping currently disabled");
+
         }
         //ANIMATIONS
         //PLAYER DIRECTION
@@ -93,7 +97,6 @@ public class PlayerController : MonoBehaviour
     void OnTriggerEnter2D(Collider2D collision)
     {
         
-        Debug.Log("YOU STARTED TOUCHING GROUND");
         isGrounded = true;
         if (collision.gameObject.CompareTag("DeathZone"))
         {
@@ -107,22 +110,17 @@ public class PlayerController : MonoBehaviour
         }
         if (collision.gameObject.CompareTag("Coin"))
         {
-            playerScore += 100;
-            Debug.Log("Touched Coin, 100 score added");
-            Destroy(collision.gameObject);
+            AddCoin();
         }
     }
 
     void OnTriggerStay2D(Collider2D collision)
     {
-        Debug.Log("YOU ARE CURRENTLY TOUCHING GROUND");
         isGrounded = true;
     }
     void OnTriggerExit2D(Collider2D collision)
     {
-        Debug.Log("YOU ARE NO LONGER TOUCHING GROUND");
         isGrounded = false;
-        
     }
 
     void OnCollisionEnter2D(Collision2D collision)
@@ -133,7 +131,6 @@ public class PlayerController : MonoBehaviour
     void CountScore()
     {
         playerScore += (int)timeRemaining * 10;
-        Debug.Log(playerScore);
     }
     void ShowEndScreen()
     {
@@ -143,6 +140,7 @@ public class PlayerController : MonoBehaviour
     
     public void Death(string reason)
     {
+        isDead = true;
         ShowEndScreen();
         playerSpeed = 0;
         playerJumpPower = 0;
@@ -157,7 +155,10 @@ public class PlayerController : MonoBehaviour
         {
             fullString += "You Fell";
         }
-        else 
+        else if (reason == "Time") {
+            fullString += "Out of Time";
+        }
+        else
         {
             fullString += "You died to a " + reason + " ";
         }
@@ -173,6 +174,12 @@ public class PlayerController : MonoBehaviour
         fullString += "Level Complete!";
         fullString += "\n Final Score: " + playerScore;
         levelEndUI.GetComponent<TMP_Text>().text = fullString;
+    }
+
+    public void AddCoin()
+    {
+        playerScore += 100;
+        Debug.Log("Touched Coin, 100 score added");
     }
     public void HeadBump()
     {

@@ -24,6 +24,7 @@ public class QuestionBlock : MonoBehaviour
         if (containedItem == "Coin")
         {
             Debug.Log("There is a coin in here");
+            gameObject.GetComponent<PlayerController>().AddCoin();
         }
         else if (containedItem == "GrowthPower")
         {
